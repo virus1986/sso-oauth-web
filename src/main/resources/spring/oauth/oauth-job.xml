@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xmlns:if="http://developer.bingosoft.net/schema/sso/condition"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+	http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd
+	http://developer.bingosoft.net/schema/sso/condition http://developer.bingosoft.net/schema/condition-1.0.xsd">
+
+    <!--Quartz -->
+    <!-- badAuthenticateCounterCleaner CLEANER -->
+    <if:condition test="oauth.token_mode=='db'">
+	    <bean id="jdbcOAuthTokenCleaner" class="bingo.oauth.provider.ex.JdbcOAuthTokenCleaner">
+	    	<constructor-arg index="0">
+				<ref bean="dataSource"/>
+			</constructor-arg>
+	    </bean>>
+	    
+	    <bean id="jobDetailJdbcOAuthTokenCleaner" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean"
+	          p:targetObject-ref="jdbcOAuthTokenCleaner"
+	          p:targetMethod="clean" />
+	    
+	    <bean id="triggerJobDetailJdbcOAuthTokenCleaner" class="org.springframework.scheduling.quartz.SimpleTriggerBean"
+	          p:jobDetail-ref="jobDetailJdbcOAuthTokenCleaner"
+	          p:startDelay="20000"
+	          p:repeatInterval="7200000" /><!-- 7200000 2小时 -->
+    </if:condition>
+   
+</beans>

@@ -1,0 +1,284 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:oauth1="http://www.springframework.org/schema/security/oauth"
+	xmlns:oauth2="http://www.springframework.org/schema/security/oauth2"
+	xmlns:oauth-ex="http://developer.bingosoft.net/schema/oauth"
+	xmlns:oauth1-ex="http://developer.bingosoft.net/schema/oauth1"
+	xmlns:oauth2-ex="http://developer.bingosoft.net/schema/oauth2"
+	xmlns:if="http://developer.bingosoft.net/schema/sso/condition"
+	xmlns:sec="http://www.springframework.org/schema/security" xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="
+		http://www.springframework.org/schema/security/oauth http://www.springframework.org/schema/security/spring-security-oauth-1.0.xsd
+		http://www.springframework.org/schema/security/oauth2 http://www.springframework.org/schema/security/spring-security-oauth2-1.0.xsd
+		http://developer.bingosoft.net/schema/oauth http://developer.bingosoft.net/schema/spring-security-oauth-ex-1.0.xsd
+		http://developer.bingosoft.net/schema/oauth1 http://developer.bingosoft.net/schema/spring-security-oauth1-ex-1.0.xsd
+		http://developer.bingosoft.net/schema/oauth2 http://developer.bingosoft.net/schema/spring-security-oauth2-ex-1.0.xsd
+		http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-3.1.xsd
+		http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-3.1.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.1.xsd
+		http://developer.bingosoft.net/schema/sso/condition http://developer.bingosoft.net/schema/condition-1.0.xsd">
+
+	<!--Basic application beans.  move to applicationContext.xml
+	<mvc:annotation-driven />
+	<mvc:default-servlet-handler />
+	-->
+	<sec:global-method-security
+		pre-post-annotations="enabled" proxy-target-class="true">
+		<!--you could also wire in the expression handler up at the layer of the 
+			http filters. See https://jira.springsource.org/browse/SEC-1452 -->
+		<sec:expression-handler ref="oauthExpressionHandler" />
+	</sec:global-method-security>
+
+	<bean id="viewResolver"
+		class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<property name="prefix" value="/WEB-INF/jsp/" />
+		<property name="suffix" value=".jsp" />
+	</bean>
+	<bean id="accessConfirmationController"
+		class="bingo.oauth.authorization.server.demo.mvc.AccessConfirmationController">
+		<property name="clientDetailsService" ref="clientDetails" />
+	</bean>
+	<!--++++++++++++++++++++++++++++++++ begin OAuth Common ++++++++++++++++++++++++++++++++ -->
+	<oauth-ex:client-details-service id="clientDetails">
+		<oauth-ex:client client-id="my-trusted-client"
+			authorized-grant-types="password,authorization_code,refresh_token,implicit"
+			authorities="ROLE_CLIENT, ROLE_TRUSTED_CLIENT" scope="read,write,trust" />
+		<oauth-ex:client client-id="my-trusted-client-with-secret"
+			authorized-grant-types="password,authorization_code,refresh_token,implicit"
+			secret="somesecret" authorities="ROLE_CLIENT, ROLE_TRUSTED_CLIENT" />
+		<oauth-ex:client client-id="my-less-trusted-client"
+			authorized-grant-types="authorization_code,implicit" authorities="ROLE_CLIENT" />
+		<oauth-ex:client client-id="my-less-trusted-autoapprove-client"
+			authorized-grant-types="implicit" authorities="ROLE_CLIENT" />
+		<oauth-ex:client client-id="my-client-with-registered-redirect"
+			authorized-grant-types="authorization_code,client_credentials"
+			authorities="ROLE_CLIENT" redirect-uri="http://anywhere" scope="read,trust" />
+		<oauth-ex:client client-id="my-untrusted-client-with-registered-redirect"
+			authorized-grant-types="authorization_code" authorities="ROLE_CLIENT"
+			redirect-uri="http://anywhere" scope="read" />
+		<oauth-ex:client client-id="tonr" resource-ids="http://anywhere/"
+			authorized-grant-types="authorization_code,client_credentials,assertion,refresh_token"
+			authorities="ROLE_CLIENT" scope="read,write" secret="secret"
+			publicKey="MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCxSlNYqLD9byJgK3QHkUSi06Ah
+zegf/IOmBN/8YqfmSPP8uV9Rn8dg//md6whuSwXopdEtXubhcr/ZYUfL+xWr4Rjw
+9S3fOk3LIcoJCPltCi1t65Rpr3NB4hRaDcA58EcTfHr2GedHocv88FfkXgb4SDqH
++Q0ai8LAWRLcMY/6PwIDAQAB" />
+		<oauth-ex:client client-id="clientId" resource-ids="http://anywhere/"
+			authorized-grant-types="authorization_code,client_credentials,assertion,refresh_token"
+			authorities="ROLE_CLIENT" scope="read,write" secret="clientSecret"
+			publicKey="MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCxSlNYqLD9byJgK3QHkUSi06Ah
+zegf/IOmBN/8YqfmSPP8uV9Rn8dg//md6whuSwXopdEtXubhcr/ZYUfL+xWr4Rjw
+9S3fOk3LIcoJCPltCi1t65Rpr3NB4hRaDcA58EcTfHr2GedHocv88FfkXgb4SDqH
++Q0ai8LAWRLcMY/6PwIDAQAB" />
+		<oauth-ex:client client-id="none" resource-ids="http://anywhere/"
+			authorized-grant-types="authorization_code,client_credentials,assertion,refresh_token"
+			authorities="ROLE_CLIENT" scope="read,write" secret="clientSecret"
+			publicKey="MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCxSlNYqLD9byJgK3QHkUSi06Ah
+zegf/IOmBN/8YqfmSPP8uV9Rn8dg//md6whuSwXopdEtXubhcr/ZYUfL+xWr4Rjw
+9S3fOk3LIcoJCPltCi1t65Rpr3NB4hRaDcA58EcTfHr2GedHocv88FfkXgb4SDqH
++Q0ai8LAWRLcMY/6PwIDAQAB" />
+		<oauth-ex:client client-id="tonr-consumer-key" secret="SHHHHH!!!!!!!!!!"/>
+		
+		<oauth-ex:client client-id="eim-client" resource-ids="http://anywhere/"
+			authorized-grant-types="authorization_code,client_credentials,assertion,refresh_token"
+			authorities="ROLE_CLIENT" scope="read,write" secret="8EcTfHr2GedHoc"
+			publicKey="MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCxSlNYqLD9byJgK3QHkUSi06Ah
+zegf/IOmBN/8YqfmSPP8uV9Rn8dg//md6whuSwXopdEtXubhcr/ZYUfL+xWr4Rjw
+9S3fOk3LIcoJCPltCi1t65Rpr3NB4hRaDcA58EcTfHr2GedHocv88FfkXgb4SDqH
++Q0ai8LAWRLcMY/6PwIDAQAB" />
+	</oauth-ex:client-details-service>
+	<!--++++++++++++++++++++++++++++++++ end OAuth Common ++++++++++++++++++++++++++++++++ -->
+
+	<!--++++++++++++++++++++++++++++++++ begin OAuth 1 ++++++++++++++++++++++++++++++++ -->
+	<http pattern="/oauth/1/checktoken" security="none"
+		xmlns="http://www.springframework.org/schema/security" />	
+	
+	<http pattern="/oauth/1/**" auto-config="true"
+		xmlns="http://www.springframework.org/schema/security"
+		entry-point-ref="openIdLoginAuthenticationEntryPoint">
+		<intercept-url pattern="/oauth/1/**" access="ROLE_USER" />
+		<custom-filter ref="trustedAuthenticationProcessingFilter"
+			before="FORM_LOGIN_FILTER" />
+	</http>
+	<oauth1-ex:provider consumer-details-service-ref="clientDetails"
+		token-services-ref="oauth1TokenServices" request-token-url="/oauth/1/request_token"
+		authenticate-token-url="/oauth/1/authorize" authentication-failed-url="/oauth/confirm_access"
+		access-granted-url="/request_token_authorized.jsp" access-token-url="/oauth/1/access_token"
+		require10a="false" />	
+
+	<if:condition test="oauth.token_mode=='db'">
+	<bean id="oauth1TokenServices"
+		class="bingo.oauth.provider.ex.oauth1.JdbcProviderTokenServices">
+		<constructor-arg index="0">
+			<ref bean="dataSource"/>
+		</constructor-arg>
+	</bean>
+	</if:condition>
+	<if:condition test="oauth.token_mode=='mem'">
+	<bean id="oauth1TokenServices"
+		class="org.springframework.security.oauth.provider.token.InMemorySelfCleaningProviderTokenServices">
+	</bean>
+	</if:condition>
+	<!--++++++++++++++++++++++++++++++++ end OAuth 1 ++++++++++++++++++++++++++++++++ -->
+
+	<!--++++++++++++++++++++++++++++++++ begin OAuth 2 ++++++++++++++++++++++++++++++++ -->
+	<!-- add by yangmc : TODO 需要预防攻击，获取有效Token (好像OAuth本身并没有定义这个) -->
+	<http pattern="/oauth/checktoken" security="none"
+		xmlns="http://www.springframework.org/schema/security" />
+	<http pattern="/oauth/2/checktoken" security="none"
+		xmlns="http://www.springframework.org/schema/security" />
+	
+	<http pattern="/oauth/token" create-session="stateless"
+		xmlns="http://www.springframework.org/schema/security">
+		<intercept-url pattern="/oauth/token" access="IS_AUTHENTICATED_FULLY" />
+		<anonymous enabled="false" />
+		<http-basic />
+		<!-- include this only if you need to authenticate clients via request 
+			parameters -->
+		<custom-filter ref="clientCredentialsTokenEndpointFilter"
+			before="BASIC_AUTH_FILTER" />
+	</http>
+	<http pattern="/oauth/2/token" create-session="stateless"
+		xmlns="http://www.springframework.org/schema/security">
+		<intercept-url pattern="/oauth/2/token" access="IS_AUTHENTICATED_FULLY" />
+		<anonymous enabled="false" />
+		<http-basic />
+		<!-- include this only if you need to authenticate clients via request 
+			parameters -->
+		<custom-filter ref="clientCredentialsTokenEndpointFilter"
+			before="BASIC_AUTH_FILTER" />
+	</http>
+	<bean id="clientCredentialsTokenEndpointFilter"
+		class="bingo.oauth.provider.authzserver.security.filter.ClientCredentialsTokenEndpointFilter">
+		<property name="authenticationManager" ref="clientAuthenticationManager" />
+		<property name="resolvers">
+			<util:list>
+				<bean
+					class="bingo.oauth.provider.authzserver.security.RefreshTokenAuthenticationResolver"></bean>
+				<!-- ServiceAccountAuthenticationResolver放置在前面 -->
+				<bean
+					class="bingo.oauth.provider.authzserver.security.ServiceAccountAuthenticationResolver"></bean>
+				<bean
+					class="bingo.oauth.provider.authzserver.security.ClientSecretAuthenticationResolver"></bean>
+			</util:list>
+		</property>
+	</bean>
+	<!-- 扩展Assertion授权模式 1、扩展clientCredentialsTokenEndpointFilter，支持Assertion的Authentication 
+		2、提供Assertion对应的Provider，验证Authentication，并设置相关属性 3、扩展oauth-ex:service-account，从Authentication获取相关信息 -->
+	<authentication-manager id="clientAuthenticationManager"
+		xmlns="http://www.springframework.org/schema/security">
+		<authentication-provider user-service-ref="clientDetailsUserService" />
+		<authentication-provider ref="serviceAccountAuthenticationProvider" />
+	</authentication-manager>
+
+	<bean id="serviceAccountAuthenticationProvider"
+		class="bingo.oauth.provider.authzserver.security.authentication.ServiceAccountAuthenticationProvider">
+		<property name="clientDetailsService" ref="clientDetails"></property>
+	</bean>
+
+	<bean id="clientDetailsUserService"
+		class="org.springframework.security.oauth2.provider.client.ClientDetailsUserDetailsService">
+		<constructor-arg ref="clientDetails" />
+	</bean>
+
+	<if:condition test="oauth.token_mode=='db'">
+	<bean id="tokenStore"
+		class="bingo.oauth.provider.ex.oauth2.JdbcTokenStore">
+		<constructor-arg index="0">
+			<ref bean="dataSource"/>
+		</constructor-arg>
+	</bean>
+	<bean id="oauth2AuthorizationCodeServices"
+		class="org.springframework.security.oauth2.provider.code.JdbcAuthorizationCodeServices">
+		<constructor-arg index="0">
+			<ref bean="dataSource"/>
+		</constructor-arg>
+	</bean>
+	</if:condition>
+	<if:condition test="oauth.token_mode=='mem'">
+	<bean id="tokenStore"
+		class="org.springframework.security.oauth2.provider.token.InMemoryTokenStore">
+	</bean>
+	<bean id="oauth2AuthorizationCodeServices"
+		class="org.springframework.security.oauth2.provider.code.InMemoryAuthorizationCodeServices">
+	</bean>
+	</if:condition>
+
+	<bean id="tokenServices"
+		class="org.springframework.security.oauth2.provider.token.RandomValueTokenServices">
+		<property name="tokenStore" ref="tokenStore" />
+		<property name="supportRefreshToken" value="true" />
+	</bean>
+
+	<bean id="userApprovalHandler"
+		class="bingo.oauth.authorization.server.demo.RememberMeUserApprovalHandler">
+		<property name="autoApproveClients">
+			<set>
+				<value>tonr</value>
+				<value>clientId</value>
+				<value>none</value>
+			</set>
+		</property>
+		<property name="tokenServices" ref="tokenServices" />
+	</bean>
+	
+	
+
+	<oauth2-ex:authorization-server
+		client-details-service-ref="clientDetails" token-services-ref="tokenServices"
+		user-approval-handler-ref="userApprovalHandler">
+		<oauth2-ex:authorization-code services-ref="oauth2AuthorizationCodeServices" />
+		<oauth2-ex:implicit />
+		<oauth2-ex:refresh-token />
+		<oauth2-ex:client-credentials />
+		<oauth2-ex:password />
+		<oauth2-ex:service-account />
+	</oauth2-ex:authorization-server>
+
+	<oauth2:expression-handler id="oauthExpressionHandler" />
+	<!--++++++++++++++++++++++++++++++++ end OAuth 2 ++++++++++++++++++++++++++++++++ -->
+
+
+	<!--++++++++++++++++++++++++++++++++ begin spring security ++++++++++++++++++++++++++++++++ -->
+	<!-- Just for testing... -->
+	<http pattern="/oauth/cache_approvals" security="none"
+		xmlns="http://www.springframework.org/schema/security" />
+	<http pattern="/oauth/uncache_approvals" security="none"
+		xmlns="http://www.springframework.org/schema/security" />	
+
+	<http pattern="/oauth/**" auto-config="true"
+		xmlns="http://www.springframework.org/schema/security"
+		entry-point-ref="openIdLoginAuthenticationEntryPoint">
+		<intercept-url pattern="/oauth/**" access="ROLE_USER" />
+		<custom-filter ref="trustedAuthenticationProcessingFilter"
+			before="FORM_LOGIN_FILTER" />
+	</http>
+	<bean id="trustedAuthenticationProcessingFilter"
+		class="bingo.oauth.provider.authzserver.security.openid.TrustedAuthenticationProcessingFilter">
+		<property name="singleSignOnController" ref="singleSignOnController"></property>
+	</bean>
+	<bean id="openIdLoginAuthenticationEntryPoint"
+		class="bingo.oauth.provider.authzserver.security.openid.OpenIdLoginAuthenticationEntryPoint">
+	</bean>
+
+	<bean id="accessDecisionManager" class="org.springframework.security.access.vote.UnanimousBased"
+		xmlns="http://www.springframework.org/schema/beans">
+		<constructor-arg>
+			<list>
+				<bean class="org.springframework.security.oauth2.provider.vote.ScopeVoter" />
+				<bean class="org.springframework.security.access.vote.RoleVoter" />
+				<bean class="org.springframework.security.access.vote.AuthenticatedVoter" />
+			</list>
+		</constructor-arg>
+	</bean>
+
+	<!-- 这个需要，不然会报错，但是实际上没有用到这个认证器，所以留空 -->
+	<authentication-manager alias="authenticationManager"
+		xmlns="http://www.springframework.org/schema/security">		
+	</authentication-manager>
+
+	<!--++++++++++++++++++++++++++++++++ end spring security ++++++++++++++++++++++++++++++++ -->
+</beans>

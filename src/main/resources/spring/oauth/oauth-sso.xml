@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:oauth="http://www.springframework.org/schema/security/oauth2"
+	xmlns:oauth-ex="http://developer.bingosoft.net/schema/oauth2"
+	xmlns:sec="http://www.springframework.org/schema/security" xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://www.springframework.org/schema/security/oauth2 http://www.springframework.org/schema/security/spring-security-oauth2-1.0.xsd
+		http://developer.bingosoft.net/schema/oauth2 http://developer.bingosoft.net/schema/spring-security-oauth2-ex-1.0.xsd
+		http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-3.1.xsd
+		http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-3.1.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.1.xsd">
+
+	<bean id="oauthGrantHandler" class="bingo.oauth.provider.authzserver.sso.OAuthGrantHandler">
+		<property name="authorizationCodeServices" ref="oauth2AuthorizationCodeServices"></property>
+    </bean>
+	<bean id="grantOAuthAccessTokenCheckAuthenticationHandler" class="bingo.oauth.provider.authzserver.sso.GrantOAuthAccessTokenCheckAuthenticationHandler">
+		<property name="tokenServices" ref="tokenServices"></property>
+		<property name="clientDetailsService" ref="clientDetails"></property>
+    </bean>
+    <bean id="oauthAccessTokenGrantHandler" class="bingo.oauth.provider.authzserver.sso.OAuthAccessTokenGrantHandler">
+		<property name="tokenServices" ref="tokenServices"></property>
+		<property name="clientDetailsService" ref="clientDetails"></property>
+    </bean>
+</beans>
