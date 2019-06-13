@@ -31,24 +31,5 @@
 	<bean id="portalService" class="bingo.sso.plugin.gmcc.portal.ws.MockPortalWSService">
 		<property name="account" value="admin" />		
 	</bean>
-	
-	<!-- 广东省移动  
-    <bean id="portalService" class="bingo.sso.plugin.gmcc.portal.ws.gd.PortalWSService">
-		<property name="tokenCheckEndpoint" value="${portal.tokenCheckEndpoint}" />
-		<property name="userPasswordCheckEndpoint" value="${portal.userPasswordCheckEndpoint}" />
-		<property name="systemId" value="${portal.systemId}" />
-		<property name="account" value="${portal.account}" />
-		<property name="password" value="${portal.password}" />
-	</bean>
-	-->
-	<!--  南方基地
-	<bean id="portalService" class="bingo.sso.plugin.gmcc.portal.ws.nfjd.PortalWSService">
-		<property name="tokenCheckEndpoint" value="${portal.tokenCheckEndpoint}" />
-		<property name="userPasswordCheckEndpoint" value="${portal.userPasswordCheckEndpoint}" />
-		<property name="systemId" value="${portal.systemId}" />
-		<property name="account" value="${portal.account}" />
-		<property name="password" value="${portal.password}" />
-	</bean>
-	
-	 -->
+
 </beans>
